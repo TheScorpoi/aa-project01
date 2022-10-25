@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import time
+import random
 
 def k_cliques(graph):
     # 2-cliques
@@ -42,19 +43,23 @@ if __name__ == '__main__':
     maximal_cliques_nodes = np.array(maximal_cliques_nodes, dtype=list)
     #print(maximal_cliques_nodes)
     
+    
+    random.seed(98491)
+    print(random.random())
+    
     #pos = nx.spring_layout(graph)
     #nx.draw_networkx_nodes(graph, pos)
     #nx.draw_networkx_labels(graph, pos)
     #nx.draw_networkx_edges(graph, pos, edge_color='r', arrows = True)
 
-    plt.show()
+    #plt.show()
     #finnish_1 = time.time()
     #3delta_1 = finnish_1 - start_1
     #print("Time: desenhar ", delta_1)
 
     start_2 = time.time()
-    print_cliques(graph, size_k)
+    #print_cliques(graph, size_k)
     finnish_2 = time.time()
     delta_2 = finnish_2 - start_2
 
-    print("Time: algoritmo ", delta_2)
+    #print("Time: algoritmo ", delta_2)
