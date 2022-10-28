@@ -1,7 +1,6 @@
 from itertools import combinations
 import matplotlib.pyplot as plt
 import networkx as nx
-import numpy as np
 import time
 import random
 from prettytable import PrettyTable
