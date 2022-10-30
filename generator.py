@@ -6,6 +6,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from itertools import combinations
 from prettytable import PrettyTable
+import argparse
 
 def generate_graph(vertexs_number: int, percentage: int):
     random.seed(98491)
@@ -42,7 +43,6 @@ def k_cliques(graph):
     number_of_solutions = 0
     number_of_basic_operations = 0
 
-
     while cliques:
         # result
         yield k, cliques, delta, number_of_solutions, number_of_basic_operations
@@ -64,7 +64,7 @@ def k_cliques(graph):
         delta = time.time() - initial
         k += 1
         
-def print_results(graph) -> None:
+def print_results_BF(graph) -> None:
     table = PrettyTable()
     table.field_names = ["k", "Number of Cliques", "Number os basic Operations", "Time", "Number of Solutions"]
     
@@ -72,6 +72,7 @@ def print_results(graph) -> None:
         i = 0
         for k, cliques, delta, number_of_solutions, number_of_basic_operations in k_cliques(graph):
             table.add_row([k, len(cliques), number_of_basic_operations, delta, number_of_solutions])
+            print(table)
         i+=1
         f.write(str(table))
 
@@ -81,16 +82,75 @@ def plot_graph(e):
         G.add_edge(edge[0],edge[1])
     nx.draw(G, node_size=700 , with_labels=True)
     plt.show()
+    
+def get_keys_array(dict):
+    result = []
+    for key in dict.keys():
+        result.append(key)
+    return result
+
+def p_clique (graph, k, v):
+    if k == 1:
+        return True
+    clique = []
+    vertices = v
+    max_ln=0
+    max_dict=[]
+    for i in range (0,len(graph)):
+        clique= []
+        clique.append (vertices [i])
+        for v in vertices:
+            if v in clique:
+                continue
+            isNext = True
+            for u in clique:
+                if graph.has_edge(u,v):
+                    continue 
+                else:
+                    isNext = False
+                    break
+            if isNext:
+                clique.append (v)
+                if k <= len (clique):
+                    return True
+        if len (clique) > max_ln:
+            max_ln=len (clique)
+            max_dict=clique
+    if k <= len (clique):
+        print(clique)
+        return True
+    else:
+        print(clique)
+        return False
 
 if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser("K-Cliques Problem")
+    parser.add_argument("-r", type=str, help="Resolution type: BF-Search or Heuristic")
+    parser.add_argument("-n", type=int, default=15, help="Number of vertexs, default=15")
+    parser.add_argument("-p", type=int, default=50, help="Percentage of edges, default=50, can be: 12.5, 25, 50, 75")
+    parser.add_argument("-d", type=int, default=0, help="Draw the graph: 0 - No, 1 - Yes")
+    parser.add_argument("-t", type=int)
+    args = parser.parse_args()
+    
+    #create graph
     A = time.time()
-    v,e = generate_graph(40, 50)
-
+    v,e = generate_graph(args.n, args.p)
     graph = nx.Graph()
     for edge in e:
         graph.add_edge(edge[0],edge[1])
-
-    print_results(graph)
-    print("1: ", time.time() - A)
-    #plot_graph(e)
+        
+    if args.t == 1:
+        print(p_clique(graph, 2, v))
     
+    if args.r == "BF-Search":
+        print_results_BF(graph)
+        print("Time: ", time.time() - A)
+        if args.d == 1:
+            plot_graph(e)
+    
+    if args.r == "Heuristic":
+        print("Heuristic")
+        print("Time: ", time.time() - A)
+        if args.d == 1:
+            plot_graph(e)
