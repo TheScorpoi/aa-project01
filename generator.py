@@ -213,20 +213,20 @@ if __name__ == "__main__":
     
     if args.r == "BF-Search":
         #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
-        table = PrettyTable()
-        table.field_names = ["Number of Nodes", "%","Number of Edges", "Cliques", "Different k","Time"]
-        with open('results.txt', 'w') as f:
-            for i in range(5, 200):
-                for p in [12, 25, 50, 75]:
-                    v,e, adj_list = generate_graph(i, p)
-                    graph = nx.Graph()
-                    for edge in e:
-                        graph.add_edge(edge[0],edge[1])
-                    A = time.time()
-                    result = list(set(len(c) for c in cliques(adj_list)))
-                    table.add_row([i, p,len(e), result, len(result), time.time() - A])
-            print(table)
-            f.write(str(table))
+        #table = PrettyTable()
+        #table.field_names = ["Number of Nodes", "%","Number of Edges", "Cliques", "Different k","Time"]
+        #with open('results.txt', 'w') as f:
+        #    for i in range(5, 200):
+        #        for p in [12, 25, 50, 75]:
+        #            v,e, adj_list = generate_graph(i, p)
+        #            graph = nx.Graph()
+        #            for edge in e:
+        #                graph.add_edge(edge[0],edge[1])
+        #            A = time.time()
+        #            result = list(set(len(c) for c in cliques(adj_list)))
+        #            table.add_row([i, p,len(e), result, len(result), time.time() - A])
+        #    print(table)
+        #    f.write(str(table))
             
         with open('results_analise.txt', 'a') as f_analise:
             for i in range(5, 200):
@@ -237,9 +237,8 @@ if __name__ == "__main__":
                         graph.add_edge(edge[0],edge[1])
                     A = time.time()
                     result = list(set(len(c) for c in cliques(adj_list)))
-                    f_analise.write([i, p,len(e), result, len(result), time.time() - A])
-            print(table)
-            f.write(str(table))        
+                    f_analise.write(str(time.time() - A))
+                    f_analise.write("\n")
     
         
         if args.d == 1:
