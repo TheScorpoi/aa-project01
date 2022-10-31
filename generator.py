@@ -112,18 +112,23 @@ def find_clique_greedy(graph):
     clique.append(vertices[rand])
     # print("clique inicial: ", clique)
     for v in vertices:
-        # print("v: ", v)
+        print("v: ", v)
         if v in clique:
+            print("v in clique")
             continue
         isNext = True
         for u in clique:
+            print("uuuuu: ", u)
             if u in graph[v]:
+                print("u in graph[v]")
                 continue
             else:
                 isNext = False
+                print("isNext = False")
                 break
         if isNext:
            clique.append(v)
+           print("clique append: ", clique)
     return sorted(clique)
 
 def p_clique(graph, k):
@@ -132,7 +137,6 @@ def p_clique(graph, k):
     clique = []
     vertices = get_keys_array(graph)
     max_ln = 0
-    max_dict = []
     for i in range(0, len(graph)):
         clique = []
         clique.append(vertices[i])
@@ -152,7 +156,6 @@ def p_clique(graph, k):
                     return True
         if len(clique) > max_ln:
             max_ln = len(clique)
-            max_dict = clique
     if k <= len(clique):
         return True
     else:
@@ -186,6 +189,7 @@ if __name__ == "__main__":
     parser.add_argument("-p", type=int, default=25, help="Percentage of edges, default=50, can be: 12.5, 25, 50, 75")
     parser.add_argument("-k", type=int, default=25, help="Percentage of edges, default=3, can be: 12.5, 25, 50, 75")
     parser.add_argument("-d", type=int, default=0, help="Draw the graph: 0 - No, 1 - Yes")
+    parser.add_argument("-pt", type=int, default=0, help="PrittyTable: 0 - No, 1 - Yes")
     parser.add_argument("-t", type=int)
     args = parser.parse_args()
     
@@ -215,7 +219,7 @@ if __name__ == "__main__":
         #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
         #table = PrettyTable()
         #table.field_names = ["Number of Nodes", "%","Number of Edges", "Cliques", "Different k","Time"]
-        #with open('results.txt', 'w') as f:
+        #with open('results_BF.txt', 'w') as f:
         #    for i in range(5, 200):
         #        for p in [12, 25, 50, 75]:
         #            v,e, adj_list = generate_graph(i, p)
@@ -227,8 +231,9 @@ if __name__ == "__main__":
         #            table.add_row([i, p,len(e), result, len(result), time.time() - A])
         #    print(table)
         #    f.write(str(table))
-            
-        with open('results_analise.txt', 'a') as f_analise:
+        
+        
+        with open('results_analise_BF.txt', 'a') as f_analise:
             for i in range(5, 200):
                 for p in [12, 25, 50, 75]:
                     v,e, adj_list = generate_graph(i, p)
@@ -245,7 +250,55 @@ if __name__ == "__main__":
             plot_graph(e)
     
     if args.r == "Heuristic":
-        print("Heuristic")
-        print("Time: ", time.time() - A)
+        #print(find_clique_greedy(adj_list)) 
+        #print("Time: ", time.time() - A)
+        
+        #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
+        if args.pt == 1:
+            table = PrettyTable()
+            table.field_names = ["Number of Nodes", "%","Number of Edges", "Cliques", "Different k","Time"]
+            
+            with open('results_greedy.txt', 'w') as f:
+                for i in range(5, 200):
+                    for p in [12, 25, 50, 75]:
+                        v,e, adj_list = generate_graph(i, p)
+                        graph = nx.Graph()
+                        for edge in e:
+                            graph.add_edge(edge[0],edge[1])
+                        A = time.time()
+                        k = 2
+                        cliques_size = []
+                        while True:
+                            result = p_clique(adj_list, k)
+                            cliques_size.append(k)
+                            if result == False:
+                                break
+                            k +=1                    
+                        result = list(set(len(c) for c in cliques(adj_list)))
+                        table.add_row([i, p,len(e), cliques_size, len(cliques_size), time.time() - A])
+                print(table)
+                f.write(str(table))
+        else:
+            with open('results_analise_greedy.txt', 'a') as f_analise:
+                    #for i in range(5, 7):
+                        #for p in [12, 25, 50, 75]:
+                        v,e, adj_list = generate_graph(6, 50)
+                        graph = nx.Graph()
+                        for edge in e:
+                            graph.add_edge(edge[0],edge[1])
+                        A = time.time()
+                        #result = find_clique_greedy(adj_list)
+                        k = 2
+                        cliques_size = []
+                        while True:
+                            result = p_clique(adj_list, k)
+                            if result == False:
+                                break
+                            k +=1
+                            print(result, " -- ", k)
+                        print(cliques_size)
+                        f_analise.write(str(time.time() - A))
+                        f_analise.write("\n")
+                        
         if args.d == 1:
             plot_graph(e)

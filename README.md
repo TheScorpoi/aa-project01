@@ -17,5 +17,11 @@ https://iq.opengenus.org/greedy-approach-to-find-single-maximal-clique/
 http://www.stat.yale.edu/~yw562/teaching/684/lec02.pdf
 https://github.com/OnurArdaB/k-clique/blob/master/ProjectReport.
 https://arxiv.org/pdf/1808.09531.pdf
-
+https://arxiv.org/pdf/0710.0748.pdf
 https://en.wikipedia.org/wiki/Bron–Kerbosch_algorithm
+http://www.vldb.org/pvldb/vol13/p2536-li.pdf
+
+https://stackoverflow.com/questions/66969559/how-to-find-all-the-cliques-in-a-graph-dictionary-in-python
+
+
+https://www.geeksforgeeks.org/cliques-in-graph/
