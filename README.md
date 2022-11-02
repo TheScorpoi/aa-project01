@@ -25,3 +25,4 @@ https://stackoverflow.com/questions/66969559/how-to-find-all-the-cliques-in-a-gr
 
 
 https://www.geeksforgeeks.org/cliques-in-graph/
+https://www.geeksforgeeks.org/proof-that-clique-decision-problem-is-np-complete/

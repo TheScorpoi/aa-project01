@@ -10,9 +10,10 @@ from prettytable import PrettyTable
 import argparse
 import collections
 
-def generate_graph(vertexs_number: int, percentage: int):
-    random.seed(98491)
+random.seed(98491)
 
+def generate_graph(vertexs_number: int, percentage: int):
+    
     points = [(Point(random.randint(1, 20), random.randint(1, 20))) for i in range(vertexs_number)]
     vertexs = [(Vertex(i, points[i])) for i in range(vertexs_number)]
     vertex_label = [vertex.id for vertex in vertexs]
@@ -35,8 +36,8 @@ def generate_graph(vertexs_number: int, percentage: int):
             edges.add(tuple(sorted([vertex_1, vertex_2])))
             unvisited.remove(vertex_1)
         else:
-            edges.add(
-                tuple(sorted(random.sample(vertex_label[:vertexs_number], 2))))
+            edges.add(tuple(sorted(random.sample(vertex_label[:vertexs_number], 2))))
+            
     # generate adjacency list
     for node1, node2 in sorted(edges):
         if node1 in adj_list:
@@ -49,48 +50,6 @@ def generate_graph(vertexs_number: int, percentage: int):
             adj_list[node2] = [node1]
 
     return vertexs, edges, adj_list
-
-def k_cliques(graph, k):
-    cliques = [{i, j} for i, j in graph.edges() if i != j]
-    k = k
-    delta = 0
-    number_of_solutions = 0
-    number_of_basic_operations = 0
-
-    while cliques:
-        # result
-        yield k, cliques, delta, number_of_solutions, number_of_basic_operations
-
-        number_of_solutions = 0
-        number_of_basic_operations = 0
-
-        initial = time.time()
-        # merge k-cliques into (k+1)-cliques
-        cliques_1 = set()
-        for u, v in combinations(cliques, 2):
-            number_of_basic_operations += 1
-            w = u ^ v
-            number_of_solutions += 1
-            if len(w) == 2 and graph.has_edge(*w):
-                cliques_1.add(tuple(u | w))
-                # print("cliques_1: ", k ,"   ", cliques_1)
-        # remove duplicates
-        cliques = list(map(set, cliques_1))
-        delta = time.time() - initial
-        k += 1
-
-def print_results_BF(graph, k) -> None:
-    table = PrettyTable()
-    table.field_names = ["k", "Number of Cliques",
-        "Number os basic Operations", "Time", "Number of Solutions"]
-
-    with open('results.txt', 'w') as f:
-        i = 0
-        for k, cliques, delta, number_of_solutions, number_of_basic_operations in k_cliques(graph, k):
-            table.add_row(
-                [k, len(cliques), number_of_basic_operations, delta, number_of_solutions])
-        i += 1
-        f.write(str(table))
 
 def plot_graph(e):
     G = nx.Graph()
@@ -162,11 +121,12 @@ def p_clique(graph, k):
         return False
 
 def cliques_recursive(neighbors, r, p, x):
+    #https://en.wikipedia.org/wiki/Bron–Kerbosch_algorithm
     if not p and not x:
-        yield r
+        return r
     else:
         for v in min((p - neighbors[u] for u in p | x), key=len):
-            yield from cliques_recursive(
+            yield cliques_recursive(
                 neighbors, r | {v}, p & neighbors[v], x & neighbors[v]
             )
             p.remove(v)
@@ -174,45 +134,39 @@ def cliques_recursive(neighbors, r, p, x):
 
 def cliques(graph):
     neighbors = collections.defaultdict(set)
-    for vertice, adacent_vertices in graph.items():
-        for a_d in adacent_vertices:
+    for vertice, adajacent_vertices in graph.items():
+        for a_d in adajacent_vertices:
             if a_d != vertice:
                 neighbors[a_d].add(vertice)
                 neighbors[vertice].add(a_d)
-    yield from cliques_recursive(neighbors, set(), set(neighbors), set())
+    return cliques_recursive(neighbors, set(), set(neighbors), set())
 
 if __name__ == "__main__":
-    
     parser = argparse.ArgumentParser("K-Cliques Problem")
     parser.add_argument("-r", type=str, help="Resolution type: BF-Search or Heuristic")
     parser.add_argument("-n", type=int, default=20, help="Number of vertexs, default=15")
     parser.add_argument("-p", type=int, default=25, help="Percentage of edges, default=50, can be: 12.5, 25, 50, 75")
     parser.add_argument("-k", type=int, default=25, help="Percentage of edges, default=3, can be: 12.5, 25, 50, 75")
     parser.add_argument("-d", type=int, default=0, help="Draw the graph: 0 - No, 1 - Yes")
-    parser.add_argument("-pt", type=int, default=0, help="PrittyTable: 0 - No, 1 - Yes")
+    parser.add_argument("-pt", type=int, default=0, help="PrettyTable: 0 - No, 1 - Yes")
     parser.add_argument("-t", type=int)
     args = parser.parse_args()
     
     #create graph
     A = time.time()
-    v,e, adj_list = generate_graph(args.n, args.p)
+    v,e, adj_list = generate_graph(399, 75)
     graph = nx.Graph()
     for edge in e:
         graph.add_edge(edge[0],edge[1])
-        
+    
     if args.t == 1:
-        #print(find_clique_greedy(adj_list))
-        #print(p_clique(adj_list, 2))
-        #plot_graph(e)
-        #print(list(nx.find_cliques_recursive(graph)))
-        #plot_graph(e)
-        for c in cliques(adj_list):
-            print(c)
-        result = list(set(len(c) for c in cliques(adj_list)))
-        print(result)
-        #plot_graph(e)
-        
-    k = int(args.n * (args.k / 100))
+        l = list()
+        for i in list(nx.find_cliques_recursive(graph)):
+            if len(i) not in l:
+                l.append(len(i))
+        print("native: ",sorted(l))        
+
+        k = int(args.n * (args.k / 100))
     #print(k)
     
     if args.r == "BF-Search":
@@ -232,9 +186,8 @@ if __name__ == "__main__":
         #    print(table)
         #    f.write(str(table))
         
-        
         with open('results_analise_BF.txt', 'a') as f_analise:
-            for i in range(5, 200):
+            for i in range(5, 400):
                 for p in [12, 25, 50, 75]:
                     v,e, adj_list = generate_graph(i, p)
                     graph = nx.Graph()
@@ -243,23 +196,20 @@ if __name__ == "__main__":
                     A = time.time()
                     result = list(set(len(c) for c in cliques(adj_list)))
                     f_analise.write(str(time.time() - A))
-                    f_analise.write("\n")
-    
-        
+                    f_analise.write("\n")        
         if args.d == 1:
             plot_graph(e)
     
     if args.r == "Heuristic":
         #print(find_clique_greedy(adj_list)) 
         #print("Time: ", time.time() - A)
-        
         #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
         if args.pt == 1:
             table = PrettyTable()
             table.field_names = ["Number of Nodes", "%","Number of Edges", "Cliques", "Different k","Time"]
             
             with open('results_greedy.txt', 'w') as f:
-                for i in range(5, 200):
+                for i in range(5, 400):
                     for p in [12, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
@@ -270,16 +220,14 @@ if __name__ == "__main__":
                         cliques_size = []
                         while True:
                             result = p_clique(adj_list, k)
-                            cliques_size.append(k)
                             if result == False:
                                 break
+                            cliques_size.append(k)
                             k +=1                    
-                        result = list(set(len(c) for c in cliques(adj_list)))
                         table.add_row([i, p,len(e), cliques_size, len(cliques_size), time.time() - A])
-                print(table)
                 f.write(str(table))
         else:
-            with open('results_analise_greedy.txt', 'a') as f_analise:
+            with open('results_analise_greedy.txt', 'w') as f_analise:
                     #for i in range(5, 7):
                         #for p in [12, 25, 50, 75]:
                         v,e, adj_list = generate_graph(6, 50)
