@@ -120,26 +120,37 @@ def p_clique(graph, k):
     else:
         return False
 
-def cliques_recursive(neighbors, r, p, x):
-    #https://en.wikipedia.org/wiki/Bron–Kerbosch_algorithm
-    if not p and not x:
-        return r
-    else:
-        for v in min((p - neighbors[u] for u in p | x), key=len):
-            yield cliques_recursive(
-                neighbors, r | {v}, p & neighbors[v], x & neighbors[v]
-            )
-            p.remove(v)
-            x.add(v)
-
-def cliques(graph):
+def get_adj_list_in_a_set(graph):
     neighbors = collections.defaultdict(set)
     for vertice, adajacent_vertices in graph.items():
         for a_d in adajacent_vertices:
             if a_d != vertice:
                 neighbors[a_d].add(vertice)
                 neighbors[vertice].add(a_d)
-    return cliques_recursive(neighbors, set(), set(neighbors), set())
+    return neighbors
+
+def pick_random(s):
+    if s:
+        elem = s.pop()
+        s.add(elem)
+        return elem
+
+def bron_kerbosch(clique, candidates, excluded, NEIGHBORS):
+    '''Bron–Kerbosch algorithm with pivot'''
+    global counter, cliques_list
+    counter += 1
+    if not candidates and not excluded:
+        if len(clique) >= 3:
+            cliques_list.append(clique)
+        return
+ 
+    pivot = pick_random(candidates) or pick_random(excluded)
+    for v in list(candidates.difference(NEIGHBORS[pivot])):
+        new_candidates = candidates.intersection(NEIGHBORS[v])
+        new_excluded = excluded.intersection(NEIGHBORS[v])
+        bron_kerbosch(clique + [v], new_candidates, new_excluded, NEIGHBORS)
+        candidates.remove(v)
+        excluded.add(v)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("K-Cliques Problem")
@@ -154,51 +165,62 @@ if __name__ == "__main__":
     
     #create graph
     A = time.time()
-    v,e, adj_list = generate_graph(399, 75)
+    v,e, adj_list = generate_graph(10, 25)
     graph = nx.Graph()
     for edge in e:
         graph.add_edge(edge[0],edge[1])
     
     if args.t == 1:
-        l = list()
-        for i in list(nx.find_cliques_recursive(graph)):
-            if len(i) not in l:
-                l.append(len(i))
-        print("native: ",sorted(l))        
-
-        k = int(args.n * (args.k / 100))
-    #print(k)
+        counter = 0
     
     if args.r == "BF-Search":
         #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
-        #table = PrettyTable()
-        #table.field_names = ["Number of Nodes", "%","Number of Edges", "Cliques", "Different k","Time"]
-        #with open('results_BF.txt', 'w') as f:
-        #    for i in range(5, 200):
-        #        for p in [12, 25, 50, 75]:
-        #            v,e, adj_list = generate_graph(i, p)
-        #            graph = nx.Graph()
-        #            for edge in e:
-        #                graph.add_edge(edge[0],edge[1])
-        #            A = time.time()
-        #            result = list(set(len(c) for c in cliques(adj_list)))
-        #            table.add_row([i, p,len(e), result, len(result), time.time() - A])
-        #    print(table)
-        #    f.write(str(table))
+        table = PrettyTable()
+        table.field_names = ["Number of Nodes", "%", "Number of Edges", "Cliques", "Different k", "Basic Operations", "Time"]
         
-        with open('results_analise_BF.txt', 'a') as f_analise:
-            for i in range(5, 400):
-                for p in [12, 25, 50, 75]:
-                    v,e, adj_list = generate_graph(i, p)
-                    graph = nx.Graph()
-                    for edge in e:
-                        graph.add_edge(edge[0],edge[1])
-                    A = time.time()
-                    result = list(set(len(c) for c in cliques(adj_list)))
-                    f_analise.write(str(time.time() - A))
-                    f_analise.write("\n")        
-        if args.d == 1:
-            plot_graph(e)
+        if args.pt == 1:
+            with open('results/results_BF.txt', 'w') as f:
+                for i in range(5, 200):
+                    for p in [12, 25, 50, 75]:
+                        v,e, adj_list = generate_graph(i, p)
+                        graph = nx.Graph()
+                        for edge in e:
+                            graph.add_edge(edge[0],edge[1])
+                        A = time.time()
+                        counter = 0
+                        cliques_list = []
+                        neighbors = get_adj_list_in_a_set(adj_list)
+                        bron_kerbosch([], set(graph.nodes()), set(), neighbors)
+                        cliques_ = []
+                        for cliq in cliques_list:
+                            if len(cliq) not in cliques_:
+                                cliques_.append(len(cliq))
+                        table.add_row([i, p, len(e), sorted(cliques_), len(cliques_), counter, time.time() - A])
+                f.write(str(table))
+            if args.d == 1:
+                plot_graph(e)
+        
+        if args.pt == 0:
+            with open('results/results_analise_BF.txt', 'w') as f:
+                f.write("Nodes,Percentagem,Edges,Different_k,Basic_Operations,Time\n")
+                for i in range(5, 200):
+                    for p in [12, 25, 50, 75]:
+                        v,e, adj_list = generate_graph(i, p)
+                        graph = nx.Graph()
+                        for edge in e:
+                            graph.add_edge(edge[0],edge[1])
+                        A = time.time()
+                        counter = 0
+                        cliques_list = []
+                        neighbors = get_adj_list_in_a_set(adj_list)
+                        bron_kerbosch([], set(graph.nodes()), set(), neighbors)
+                        cliques_ = []
+                        for cliq in cliques_list:
+                            if len(cliq) not in cliques_:
+                                cliques_.append(len(cliq))
+                        f.write(str(i) + "," + str(p) + "," + str(len(e)) + "," + str(len(cliques_)) + "," + str(counter) + "," + str(time.time() - A) + "\n")
+            if args.d == 1:
+                plot_graph(e)
     
     if args.r == "Heuristic":
         #print(find_clique_greedy(adj_list)) 
@@ -206,10 +228,10 @@ if __name__ == "__main__":
         #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
         if args.pt == 1:
             table = PrettyTable()
-            table.field_names = ["Number of Nodes", "%","Number of Edges", "Cliques", "Different k","Time"]
-            
-            with open('results_greedy.txt', 'w') as f:
-                for i in range(5, 400):
+            table.field_names = ["Number of Nodes", "%", "Number of Edges", "Cliques", "Different k", "Basic Operations", "Time"]
+
+            with open('results/results_greedy.txt', 'w') as f:
+                for i in range(5, 200):
                     for p in [12, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
@@ -227,26 +249,25 @@ if __name__ == "__main__":
                         table.add_row([i, p,len(e), cliques_size, len(cliques_size), time.time() - A])
                 f.write(str(table))
         else:
-            with open('results_analise_greedy.txt', 'w') as f_analise:
-                    #for i in range(5, 7):
-                        #for p in [12, 25, 50, 75]:
-                        v,e, adj_list = generate_graph(6, 50)
-                        graph = nx.Graph()
-                        for edge in e:
-                            graph.add_edge(edge[0],edge[1])
-                        A = time.time()
-                        #result = find_clique_greedy(adj_list)
-                        k = 2
-                        cliques_size = []
-                        while True:
-                            result = p_clique(adj_list, k)
-                            if result == False:
-                                break
-                            k +=1
-                            print(result, " -- ", k)
-                        print(cliques_size)
-                        f_analise.write(str(time.time() - A))
-                        f_analise.write("\n")
-                        
+            with open('results/results_analise_greedy.txt', 'w') as f_analise:
+                    for i in range(5, 200):
+                        for p in [12, 25, 50, 75]:
+                            v,e, adj_list = generate_graph(6, 50)
+                            graph = nx.Graph()
+                            for edge in e:
+                                graph.add_edge(edge[0],edge[1])
+                            A = time.time()
+                            #result = find_clique_greedy(adj_list)
+                            k = 2
+                            cliques_size = []
+                            while True:
+                                result = p_clique(adj_list, k)
+                                if result == False:
+                                    break
+                                k +=1
+                                print(result, " -- ", k)
+                            print(cliques_size)
+                            f_analise.write(str(time.time() - A))
+                            f_analise.write("\n")   
         if args.d == 1:
             plot_graph(e)
