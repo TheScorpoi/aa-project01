@@ -234,7 +234,7 @@ if __name__ == "__main__":
     if args.r == "Heuristic":
         if args.pt == 1:
             table = PrettyTable()
-            table.field_names = ["Number of Nodes", "%", "Number of Edges", "Cliques", "Different k", "Basic Operations", "Time", "Memory"]
+            table.field_names = ["Number of Nodes", "%", "Number of Edges", "Cliques", "k", "Basic Operations", "Time", "Memory"]
 
             with open('results/results_greedy.txt', 'w') as f:
                 for i in range(5, 200):
@@ -245,16 +245,16 @@ if __name__ == "__main__":
                             graph.add_edge(edge[0],edge[1])
                         A = time.time()
                         mem1 = psutil.virtual_memory().used # total physical memory in Bytes
-                        k = 3
+                        k = int(i * p / 100)
                         cliques_size = []
-                        while True:
-                            result, basic_op = p_clique(adj_list, k)
-                            if result == False:
-                                break
-                            cliques_size.append(k)
-                            k+=1     
+                        #while True:
+                        result, basic_op = p_clique(adj_list, k)
+                        #    if result == False:
+                        #        break
+                        #    cliques_size.append(k)
+                        #    k+=1     
                         mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
-                        table.add_row([i, p,len(e), cliques_size, len(cliques_size), basic_op, time.time() - A, abs(mem2 - mem1)/2**(20)])
+                        table.add_row([i, p,len(e), result, k, basic_op, time.time() - A, abs(mem2 - mem1)/2**(20)])
                 f.write(str(table))
         else:
             with open('results/results_analise_greedy.txt', 'w') as f_analise:
