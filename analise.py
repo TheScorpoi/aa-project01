@@ -91,11 +91,11 @@ if __name__ == "__main__":
     clique_size_edges(df_BF, 'Brute Force')
     memory_used(df_BF, 'Brute Force')
 
-    #df_greedy = pd.read_csv('results_analise_greedy.txt', sep=',')
+    #df_greedy = pd.read_csv('results/results_analise_greedy.txt', sep=',')
 
     #basic_operations_num(df_greedy, 'Heuristic')
     #execution_times(df_greedy, 'Heuristic')
     #clique_size_vertices(df_greedy, 'Heuristic')
     #clique_size_edges(df_greedy, 'Heuristic')
-    #memory_used(df_BF, 'Heuristic')
+    #memory_used(df_greedy, 'Heuristic')
     

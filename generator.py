@@ -59,75 +59,49 @@ def plot_graph(e):
     nx.draw(G, node_size=700, with_labels=True)
     plt.show()
 
-def get_keys_array(dict):
-    result = []
-    for key in dict.keys():
-        result.append(key)
-    return result
-
-def find_clique_greedy(graph):
-    clique = []
-    vertices = list(graph.keys())
-    rand = random.randrange(0, len(vertices), 1)
-    clique.append(vertices[rand])
-    # print("clique inicial: ", clique)
-    for v in vertices:
-        print("v: ", v)
-        if v in clique:
-            print("v in clique")
-            continue
-        isNext = True
-        for u in clique:
-            print("uuuuu: ", u)
-            if u in graph[v]:
-                print("u in graph[v]")
-                continue
-            else:
-                isNext = False
-                print("isNext = False")
-                break
-        if isNext:
-           clique.append(v)
-           print("clique append: ", clique)
-    return sorted(clique)
-
 def p_clique(graph, k):
-    if k == 1:
-        return False
-    clique = []
-    vertices = get_keys_array(graph)
-    for i in range(0, len(graph)):
+    basic_op = 1
+    if k == 1 or k == 2:
+        return False, basic_op
+    vertices = list(graph.keys())
+    #print(len(graph))
+    for i in range(2, len(graph)):
         clique = []
         clique.append(vertices[i])
-        print("clique inicial: ", clique)
-        print("vertices: ", vertices)
-        print(graph)
+        #print("clique inicial: ", clique)
+        #print("vertices: ", vertices)
+        #print(graph)
+        basic_op += 1
         for v in vertices:
             initial = v
+            #print("initial: ", initial)
             if v in clique:
-                print("v in clique  ", v)
+                basic_op += 1
+                #print("v in clique  ", v) #so search continues
                 continue
-            isNext = True
+            #isNext = True
             for u in clique:
+                basic_op += 1
                 if u in graph[v]:
-                    print("u in graph[v]  ", u)
+                    #print("graph[v]   ", graph[v])
+                    #print("u in graph[v]  ", u)
+                    isNext = True
                     continue
                 else:
                     if u == initial:
-                        cli
+                        continue
                     isNext = False
                     break
             if isNext:
-                print("antes de append: ", clique)
+                #print("antes de append: ", clique)
                 clique.append(v)
-                print("clique append: ", clique)
+                #print("clique append: ", clique)
                 if k <= len(clique):
-                    return True
-                
+                    return True, basic_op
     if k <= len(clique):
-        return True
+        return True, basic_op
     else:
-        return False
+        return False, basic_op
 
 def get_adj_list_in_a_set(graph):
     neighbors = collections.defaultdict(set)
@@ -178,15 +152,18 @@ if __name__ == "__main__":
     if args.tt == 1:    
         #create graph
         A = time.time()
-        v,e, adj_list = generate_graph(141, 75)
+        v,e, adj_list = generate_graph(5, 25)
         graph = nx.Graph()
         for edge in e:
             graph.add_edge(edge[0],edge[1])
-        ll = []
-        for clique in list(nx.find_cliques(graph)):
-            if len(clique) not in ll:
-                ll.append(len(clique))
-        print(sorted(ll))
+        #ll = []
+        #plot_graph(e)
+        #for clique in list(nx.find_cliques(graph)):
+        #    if len(clique) not in ll:
+        #        ll.append(len(clique))
+        #print(sorted(ll))
+        print(p_clique(adj_list, 2))
+        #plot_graph(e)
     
     if args.t == 1:
         mem1 = psutil.virtual_memory().used # total physical memory in Bytes
@@ -255,12 +232,9 @@ if __name__ == "__main__":
                 plot_graph(e)
     
     if args.r == "Heuristic":
-        #print(find_clique_greedy(adj_list)) 
-        #print("Time: ", time.time() - A)
-        #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
         if args.pt == 1:
             table = PrettyTable()
-            table.field_names = ["Number of Nodes", "%", "Number of Edges", "Cliques", "Different k", "Basic Operations", "Time"]
+            table.field_names = ["Number of Nodes", "%", "Number of Edges", "Cliques", "Different k", "Basic Operations", "Time", "Memory"]
 
             with open('results/results_greedy.txt', 'w') as f:
                 for i in range(5, 200):
@@ -270,36 +244,38 @@ if __name__ == "__main__":
                         for edge in e:
                             graph.add_edge(edge[0],edge[1])
                         A = time.time()
-                        k = 2
+                        mem1 = psutil.virtual_memory().used # total physical memory in Bytes
+                        k = 3
                         cliques_size = []
                         while True:
-                            result = p_clique(adj_list, k)
+                            result, basic_op = p_clique(adj_list, k)
                             if result == False:
                                 break
                             cliques_size.append(k)
-                            k +=1                    
-                        table.add_row([i, p,len(e), cliques_size, len(cliques_size), time.time() - A])
+                            k+=1     
+                        mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
+                        table.add_row([i, p,len(e), cliques_size, len(cliques_size), basic_op, time.time() - A, abs(mem2 - mem1)/2**(20)])
                 f.write(str(table))
         else:
             with open('results/results_analise_greedy.txt', 'w') as f_analise:
-                    #for i in range(5, 200):
-                        #for p in [12, 25, 50, 75]:
-                            v,e, adj_list = generate_graph(6, 25)
-                            graph = nx.Graph()
-                            for edge in e:
-                                graph.add_edge(edge[0],edge[1])
-                            A = time.time()
-                            #result = find_clique_greedy(adj_list)
-                            k = 2
-                            cliques_size = []
-                            while True:
-                                result = p_clique(adj_list, k)
-                                if result == False:
-                                    break
-                                k +=1
-                                print(result, " -- ", k)
-                            print(cliques_size)
-                            f_analise.write(str(time.time() - A))
-                            f_analise.write("\n")   
+                f_analise.write("Nodes,Percentagem,Edges,Different_k,Basic_Operations,Time,Memory\n")
+                for i in range(5, 200):
+                    for p in [12, 25, 50, 75]:
+                        v,e, adj_list = generate_graph(i, p)
+                        graph = nx.Graph()
+                        for edge in e:
+                            graph.add_edge(edge[0],edge[1])
+                        A = time.time()
+                        mem1 = psutil.virtual_memory().used # total physical memory in Bytes                        
+                        k = 3
+                        cliques_size = []
+                        while True:
+                            result, basic_op = p_clique(adj_list, k)
+                            if result == False:
+                                break
+                            cliques_size.append(k)
+                            k+=1
+                        mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
+                        f_analise.write(str(i) + "," + str(p) + "," + str(len(e)) + "," + str(len(cliques_size)) + "," + str(basic_op) + "," + str(time.time() - A) + "," + str((abs(mem2 - mem1))/2**(20)) + "\n")
         if args.d == 1:
             plot_graph(e)
