@@ -19,7 +19,8 @@ def generate_graph(vertexs_number: int, percentage: int):
     vertexs = [(Vertex(i, points[i])) for i in range(vertexs_number)]
     vertex_label = [vertex.id for vertex in vertexs]
 
-    edges_number = int(max((vertexs_number*(vertexs_number-1)/2)*(percentage/100), vertexs_number-1))
+    edges_number = round(max(((vertexs_number*(vertexs_number-1))/2)*(percentage/100), vertexs_number-1))
+    print("Edges number: ", edges_number)
     edges = set()
     visited = list()
     adj_list = dict()
@@ -64,27 +65,18 @@ def p_clique(graph, k):
     if k == 1 or k == 2:
         return False, basic_op
     vertices = list(graph.keys())
-    #print(len(graph))
     for i in range(2, len(graph)):
         clique = []
         clique.append(vertices[i])
-        #print("clique inicial: ", clique)
-        #print("vertices: ", vertices)
-        #print(graph)
         basic_op += 1
         for v in vertices:
             initial = v
-            #print("initial: ", initial)
             if v in clique:
                 basic_op += 1
-                #print("v in clique  ", v) #so search continues
                 continue
-            #isNext = True
             for u in clique:
                 basic_op += 1
                 if u in graph[v]:
-                    #print("graph[v]   ", graph[v])
-                    #print("u in graph[v]  ", u)
                     isNext = True
                     continue
                 else:
@@ -93,9 +85,7 @@ def p_clique(graph, k):
                     isNext = False
                     break
             if isNext:
-                #print("antes de append: ", clique)
                 clique.append(v)
-                #print("clique append: ", clique)
                 if k <= len(clique):
                     return True, basic_op
     if k <= len(clique):
@@ -152,18 +142,24 @@ if __name__ == "__main__":
     if args.tt == 1:    
         #create graph
         A = time.time()
-        v,e, adj_list = generate_graph(5, 25)
+        v,e, adj_list = generate_graph(10, 50)
         graph = nx.Graph()
         for edge in e:
             graph.add_edge(edge[0],edge[1])
+        print(len(e))
         #ll = []
         #plot_graph(e)
         #for clique in list(nx.find_cliques(graph)):
         #    if len(clique) not in ll:
         #        ll.append(len(clique))
         #print(sorted(ll))
-        print(p_clique(adj_list, 2))
+        #print(p_clique(adj_list, 2))
         #plot_graph(e)
+        #l = []
+        #for i in list(nx.find_cliques(graph)):
+        #    if len(i) not in l:
+        #       l.append(len(i))
+        #print(sorted(l))
     
     if args.t == 1:
         mem1 = psutil.virtual_memory().used # total physical memory in Bytes
@@ -234,27 +230,28 @@ if __name__ == "__main__":
     if args.r == "Heuristic":
         if args.pt == 1:
             table = PrettyTable()
-            table.field_names = ["Number of Nodes", "%", "Number of Edges", "Cliques", "k", "Basic Operations", "Time", "Memory"]
+            table.field_names = ["Number of Nodes", "%", "Number of Edges", "(%) k", "k","Clique size k?", "Basic Operations", "Time", "Memory"]
 
-            with open('results/results_greedy.txt', 'w') as f:
-                for i in range(5, 200):
+            with open('results/results_greedy2.txt', 'w') as f:
+                for i in range(5, 80):
                     for p in [12, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
                         for edge in e:
                             graph.add_edge(edge[0],edge[1])
                         A = time.time()
-                        mem1 = psutil.virtual_memory().used # total physical memory in Bytes
-                        k = int(i * p / 100)
-                        cliques_size = []
-                        #while True:
-                        result, basic_op = p_clique(adj_list, k)
-                        #    if result == False:
-                        #        break
-                        #    cliques_size.append(k)
-                        #    k+=1     
-                        mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
-                        table.add_row([i, p,len(e), result, k, basic_op, time.time() - A, abs(mem2 - mem1)/2**(20)])
+                        for j in [12, 25, 50, 75]:
+                            mem1 = psutil.virtual_memory().used # total physical memory in Bytes
+                            k = int(i * j / 100)
+                            cliques_size = []
+                            #while True:
+                            result, basic_op = p_clique(adj_list, k)
+                            #    if result == False:
+                            #        break
+                            #    cliques_size.append(k)
+                            #    k+=1     
+                            mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
+                            table.add_row([i, p,len(e), j, k, result, basic_op, time.time() - A, abs(mem2 - mem1)/2**(20)])
                 f.write(str(table))
         else:
             with open('results/results_analise_greedy.txt', 'w') as f_analise:

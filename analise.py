@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt 
+import numpy as np
 
 def clique_size_edges(data, algorithm):
     nodes = data['Edges']
@@ -58,7 +59,6 @@ def execution_times(data, algorithm):
     plt.scatter(nodes[percentage_max_num_edges == 25],basic_operations[percentage_max_num_edges == 25],c="b",marker="o", label="Edge % = 0.25")
     plt.scatter(nodes[percentage_max_num_edges == 50],basic_operations[percentage_max_num_edges == 50],c="g",marker="x", label="Edge % = 0.5")
     plt.scatter(nodes[percentage_max_num_edges == 75],basic_operations[percentage_max_num_edges == 75],c="y",marker="v", label="Edge % = 0.75")
-
     plt.legend()
     plt.title('Execution Time - ' + algorithm)
     plt.xlabel('Vertices Number')
@@ -82,20 +82,43 @@ def memory_used(data, algorithm):
     plt.show()
     
 if __name__ == "__main__":
+    df_BF = pd.read_csv('results/results_analise_BF.txt', sep=',')
     
-    """df_BF = pd.read_csv('results/results_analise_BF.txt', sep=',')
-
-    basic_operations_num(df_BF, 'Brute Force')
     execution_times(df_BF, 'Brute Force')
+    """
+    basic_operations_num(df_BF, 'Brute Force')
     clique_size_vertices(df_BF, 'Brute Force')
     clique_size_edges(df_BF, 'Brute Force')
     memory_used(df_BF, 'Brute Force')"""
 
     df_greedy = pd.read_csv('results/results_analise_greedy.txt', sep=',')
 
-    basic_operations_num(df_greedy, 'Heuristic')
-    execution_times(df_greedy, 'Heuristic')
-    clique_size_vertices(df_greedy, 'Heuristic')
-    clique_size_edges(df_greedy, 'Heuristic')
-    memory_used(df_greedy, 'Heuristic')
+    #basic_operations_num(df_greedy, 'Heuristic')
+    #execution_times(df_greedy, 'Heuristic')
+    #clique_size_vertices(df_greedy, 'Heuristic')
+    #clique_size_edges(df_greedy, 'Heuristic')
+    #memory_used(df_greedy, 'Heuristic')
+    
+    st = pd.concat([df_BF['Different_k_BF'], df_greedy['Different_k']], axis=1)
+    print(st.mean())
+    print(st.std())
+    print(st.var())
+    print(st.cov())
+    print(st.corr())
+    
+    
+    counter = 0
+    for i in range(0, len(df_BF['Different_k_BF'])):
+        if df_BF['Different_k_BF'][i] != df_greedy['Different_k'][i]:
+            counter += 1
+    print(counter, " em ", len(df_BF['Different_k_BF']))
+    
+            
+    counter_2 = 0
+    for i in range(0, len(df_BF['Different_k_BF'])):
+        if abs(df_BF['Different_k_BF'][i] - df_greedy['Different_k'][i]) > 1:
+            counter_2 += 1
+    
+    print("Somente " , counter_2, "apresentam um desvio supirior a 1")
+    
     

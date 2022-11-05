@@ -1,4 +1,4 @@
-Nodes,Percentagem,Edges,Different_k,Basic_Operations,Time,Memory
+Nodes,Percentagem,Edges,Different_k_BF,Basic_Operations,Time,Memory
 5,12,4,0,10,4.482269287109375e-05,0.0
 5,25,4,0,10,2.3126602172851562e-05,0.0
 5,50,5,0,11,2.288818359375e-05,0.0
