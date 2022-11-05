@@ -10,6 +10,7 @@ from prettytable import PrettyTable
 import argparse
 import collections
 import psutil
+import math
 
 random.seed(98491)
 
@@ -19,26 +20,25 @@ def generate_graph(vertexs_number: int, percentage: int):
     vertexs = [(Vertex(i, points[i])) for i in range(vertexs_number)]
     vertex_label = [vertex.id for vertex in vertexs]
 
-    edges_number = round(max(((vertexs_number*(vertexs_number-1))/2)*(percentage/100), vertexs_number-1))
-    print("Edges number: ", edges_number)
-    edges = set()
+    edges_number = round(((vertexs_number*(vertexs_number-1))/2)*(percentage/100))
+    edges = list()
     visited = list()
     adj_list = dict()
     unvisited = vertex_label
-
+    
     for i in range(edges_number):
         if len(edges) == 0:  # initial case: pick 2 random unvisited vertexes to form the first edge
             two_random_vertexs = random.sample(unvisited, 2)
-            edges.add(tuple(sorted(two_random_vertexs)))
+            edges.append(tuple(sorted(two_random_vertexs)))
             unvisited = list(set(unvisited) - set(two_random_vertexs))
             visited = list(set(visited).union(two_random_vertexs))
         elif len(unvisited) != 0:  # general case:
             vertex_1 = random.choice(unvisited)
             vertex_2 = random.choice(visited)
-            edges.add(tuple(sorted([vertex_1, vertex_2])))
+            edges.append(tuple(sorted([vertex_1, vertex_2])))
             unvisited.remove(vertex_1)
         else:
-            edges.add(tuple(sorted(random.sample(vertex_label[:vertexs_number], 2))))
+            edges.append(tuple(sorted(random.sample(vertex_label[:vertexs_number], 2))))
             
     # generate adjacency list
     for node1, node2 in sorted(edges):
@@ -62,10 +62,12 @@ def plot_graph(e):
 
 def p_clique(graph, k):
     basic_op = 1
-    if k == 1 or k == 2:
+    if k==0 or k==1:
         return False, basic_op
+    if k == 2:
+        return True, basic_op
     vertices = list(graph.keys())
-    for i in range(2, len(graph)):
+    for i in range(1, len(graph)):
         clique = []
         clique.append(vertices[i])
         basic_op += 1
@@ -113,7 +115,7 @@ def bron_kerbosch(clique, candidates, excluded, NEIGHBORS):
     global counter, cliques_list
     counter += 1
     if not candidates and not excluded:
-        if len(clique) >= 3:
+        if len(clique) >= 2:
             cliques_list.append(clique)
         return
  
@@ -142,11 +144,12 @@ if __name__ == "__main__":
     if args.tt == 1:    
         #create graph
         A = time.time()
-        v,e, adj_list = generate_graph(10, 50)
+        v,e, adj_list = generate_graph(10, 75)
         graph = nx.Graph()
         for edge in e:
             graph.add_edge(edge[0],edge[1])
         print(len(e))
+        #plot_graph(e)
         #ll = []
         #plot_graph(e)
         #for clique in list(nx.find_cliques(graph)):
@@ -177,28 +180,31 @@ if __name__ == "__main__":
     if args.r == "BF-Search":
         #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
         table = PrettyTable()
-        table.field_names = ["Number of Nodes", "%", "Number of Edges", "Cliques", "Different k", "Basic Operations", "Time", "Memory"]
+        table.field_names = ["Number of Nodes", "%", "Number of Edges", "(%) k", "k", "Clique size k?", "Basic Operations", "Time", "Memory"]
         
         if args.pt == 1:
             with open('results/results_BF.txt', 'w') as f:
-                for i in range(5, 200):
-                    for p in [12, 25, 50, 75]:
+                for i in range(5, 80):
+                    for p in [12.5, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
                         for edge in e:
                             graph.add_edge(edge[0],edge[1])
-                        A = time.time()
-                        mem1 = psutil.virtual_memory().used # total physical memory in Bytes
-                        counter = 0
-                        cliques_list = []
-                        neighbors = get_adj_list_in_a_set(adj_list)
-                        bron_kerbosch([], set(graph.nodes()), set(), neighbors)
-                        cliques_ = []
-                        for cliq in cliques_list:
-                            if len(cliq) not in cliques_:
-                                cliques_.append(len(cliq))
-                        mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
-                        table.add_row([i, p, len(e), sorted(cliques_), len(cliques_), counter, time.time() - A], (abs(mem2 - mem1))/2**(20)) #mem is in MB
+                        for j in [12.5, 25, 50, 75]:
+                            A = time.time()
+                            mem1 = psutil.virtual_memory().used # total physical memory in Bytes
+                            k = int(i * j / 100)
+                            counter = 0
+                            cliques_list = []
+                            neighbors = get_adj_list_in_a_set(adj_list)
+                            bron_kerbosch([], set(graph.nodes()), set(), neighbors)
+                            result = False
+                            for cliq in cliques_list:
+                                if len(cliq) == k:
+                                    result = True
+                                    break
+                            mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
+                            table.add_row([i, p, len(e), j, k, result, counter,  time.time() - A, abs(mem2 - mem1)/2**(20)])
                 f.write(str(table))
             if args.d == 1:
                 plot_graph(e)
@@ -207,7 +213,7 @@ if __name__ == "__main__":
             with open('results/results_analise_BF.txt', 'w') as f:
                 f.write("Nodes,Percentagem,Edges,Different_k,Basic_Operations,Time,Memory\n")
                 for i in range(5, 200):
-                    for p in [12, 25, 50, 75]:
+                    for p in [12.5, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
                         for edge in e:
@@ -230,11 +236,11 @@ if __name__ == "__main__":
     if args.r == "Heuristic":
         if args.pt == 1:
             table = PrettyTable()
-            table.field_names = ["Number of Nodes", "%", "Number of Edges", "(%) k", "k","Clique size k?", "Basic Operations", "Time", "Memory"]
+            table.field_names = ["Number of Nodes", "%", "Number of Edges", "(%) k", "k", "Clique size k?", "Basic Operations", "Time", "Memory"]
 
             with open('results/results_greedy2.txt', 'w') as f:
                 for i in range(5, 80):
-                    for p in [12, 25, 50, 75]:
+                    for p in [12.5, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
                         for edge in e:
@@ -257,7 +263,7 @@ if __name__ == "__main__":
             with open('results/results_analise_greedy.txt', 'w') as f_analise:
                 f_analise.write("Nodes,Percentagem,Edges,Different_k,Basic_Operations,Time,Memory\n")
                 for i in range(5, 200):
-                    for p in [12, 25, 50, 75]:
+                    for p in [12.5, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
                         for edge in e:
