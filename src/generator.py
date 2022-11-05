@@ -1,16 +1,13 @@
-from pydoc import cli
-from vertex import Vertex
-from point import Point
+from src.vertex import Vertex
+from src.point import Point
 import random
 import time
 import networkx as nx
 import matplotlib.pyplot as plt
-from itertools import combinations
 from prettytable import PrettyTable
 import argparse
 import collections
 import psutil
-import math
 
 random.seed(98491)
 
@@ -135,53 +132,11 @@ if __name__ == "__main__":
     parser.add_argument("-k", type=int, default=25, help="Percentage of edges, default=3, can be: 12.5, 25, 50, 75")
     parser.add_argument("-d", type=int, default=0, help="Draw the graph: 0 - No, 1 - Yes")
     parser.add_argument("-pt", type=int, default=0, help="PrettyTable: 0 - No, 1 - Yes")
-    parser.add_argument("-t", type=int)
-    parser.add_argument("-tt", type=int)
     args = parser.parse_args()
     
-
-        
-    if args.tt == 1:    
-        #create graph
-        A = time.time()
-        v,e, adj_list = generate_graph(10, 75)
-        graph = nx.Graph()
-        for edge in e:
-            graph.add_edge(edge[0],edge[1])
-        print(len(e))
-        #plot_graph(e)
-        #ll = []
-        #plot_graph(e)
-        #for clique in list(nx.find_cliques(graph)):
-        #    if len(clique) not in ll:
-        #        ll.append(len(clique))
-        #print(sorted(ll))
-        #print(p_clique(adj_list, 2))
-        #plot_graph(e)
-        #l = []
-        #for i in list(nx.find_cliques(graph)):
-        #    if len(i) not in l:
-        #       l.append(len(i))
-        #print(sorted(l))
-    
-    if args.t == 1:
-        mem1 = psutil.virtual_memory().used # total physical memory in Bytes
-        counter = 0
-        cliques_list = []
-        neighbors = get_adj_list_in_a_set(adj_list)
-        bron_kerbosch([], set(graph.nodes()), set(), neighbors)
-        cliques_ = []
-        for cliq in cliques_list:
-            if len(cliq) not in cliques_:
-                cliques_.append(len(cliq))
-        mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
-        print("mem:", (abs(mem2 - mem1))/2**(20))
-    
     if args.r == "BF-Search":
-        #print("Graph with ", args.n, " nodes and ", len(e), " edges has these cliques of size", result, "and it takes", time.time() - A , "seconds to find them")
         table = PrettyTable()
         table.field_names = ["Number of Nodes", "%", "Number of Edges", "(%) k", "k", "Clique size k?", "Basic Operations", "Time", "Memory"]
-        
         if args.pt == 1:
             with open('results/results_BF.txt', 'w') as f:
                 for i in range(5, 80):
@@ -208,7 +163,6 @@ if __name__ == "__main__":
                 f.write(str(table))
             if args.d == 1:
                 plot_graph(e)
-        
         if args.pt == 0:
             with open('results/results_analise_BF.txt', 'w') as f:
                 f.write("Nodes,Percentagem,Edges,Perc_k,k,Result,Basic_Operations,Time,Memory\n")
@@ -240,7 +194,6 @@ if __name__ == "__main__":
         if args.pt == 1:
             table = PrettyTable()
             table.field_names = ["Number of Nodes", "%", "Number of Edges", "(%) k", "k", "Clique size k?", "Basic Operations", "Time", "Memory"]
-
             with open('results/results_greedy2.txt', 'w') as f:
                 for i in range(5, 80):
                     for p in [12.5, 25, 50, 75]:

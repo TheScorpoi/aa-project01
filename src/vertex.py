@@ -9,6 +9,6 @@ class Vertex:
         return f"[id={self.id}, point={self.point}]"
 
 if __name__ == "__main__":
-    from point import Point
+    from src.point import Point
     v = Vertex("A", Point(1,2))
     print(v)
