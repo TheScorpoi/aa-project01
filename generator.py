@@ -62,9 +62,9 @@ def plot_graph(e):
 
 def p_clique(graph, k):
     basic_op = 1
-    if k==0 or k==1:
+    if k==0:
         return False, basic_op
-    if k == 2:
+    if k==1 or k == 2:
         return True, basic_op
     vertices = list(graph.keys())
     for i in range(1, len(graph)):
@@ -115,7 +115,7 @@ def bron_kerbosch(clique, candidates, excluded, NEIGHBORS):
     global counter, cliques_list
     counter += 1
     if not candidates and not excluded:
-        if len(clique) >= 2:
+        if len(clique) >= 1:
             cliques_list.append(clique)
         return
  
@@ -200,7 +200,7 @@ if __name__ == "__main__":
                             bron_kerbosch([], set(graph.nodes()), set(), neighbors)
                             result = False
                             for cliq in cliques_list:
-                                if len(cliq) == k:
+                                if len(cliq) == k or k==1:
                                     result = True
                                     break
                             mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
@@ -211,25 +211,28 @@ if __name__ == "__main__":
         
         if args.pt == 0:
             with open('results/results_analise_BF.txt', 'w') as f:
-                f.write("Nodes,Percentagem,Edges,Different_k,Basic_Operations,Time,Memory\n")
-                for i in range(5, 200):
+                f.write("Nodes,Percentagem,Edges,Perc_k,k,Result,Basic_Operations,Time,Memory\n")
+                for i in range(5, 80):
                     for p in [12.5, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
                         for edge in e:
                             graph.add_edge(edge[0],edge[1])
-                        A = time.time()
-                        mem1 = psutil.virtual_memory().used # total physical memory in Bytes
-                        counter = 0
-                        cliques_list = []
-                        neighbors = get_adj_list_in_a_set(adj_list)
-                        bron_kerbosch([], set(graph.nodes()), set(), neighbors)
-                        cliques_ = []
-                        for cliq in cliques_list:
-                            if len(cliq) not in cliques_:
-                                cliques_.append(len(cliq))
-                        mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
-                        f.write(str(i) + "," + str(p) + "," + str(len(e)) + "," + str(len(cliques_)) + "," + str(counter) + "," + str(time.time() - A) + "," + str((abs(mem2 - mem1))/2**(20)) + "\n")
+                        for j in [12.5, 25, 50, 75]:
+                            A = time.time()
+                            mem1 = psutil.virtual_memory().used # total physical memory in Bytes
+                            k = int(i * j / 100)
+                            counter = 0
+                            cliques_list = []
+                            neighbors = get_adj_list_in_a_set(adj_list)
+                            bron_kerbosch([], set(graph.nodes()), set(), neighbors)
+                            result = False
+                            for cliq in cliques_list:
+                                if len(cliq) == k or k==1:
+                                    result = True
+                                    break
+                            mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
+                            f.write(str(i) + "," + str(p) + "," + str(len(e)) + "," + str(j) + "," + str(k) + "," + str(result) + "," + str(counter) + "," + str(time.time() - A) + "," + str((abs(mem2 - mem1))/2**(20)) + "\n")
             if args.d == 1:
                 plot_graph(e)
     
@@ -249,36 +252,26 @@ if __name__ == "__main__":
                         for j in [12, 25, 50, 75]:
                             mem1 = psutil.virtual_memory().used # total physical memory in Bytes
                             k = int(i * j / 100)
-                            cliques_size = []
-                            #while True:
                             result, basic_op = p_clique(adj_list, k)
-                            #    if result == False:
-                            #        break
-                            #    cliques_size.append(k)
-                            #    k+=1     
                             mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
                             table.add_row([i, p,len(e), j, k, result, basic_op, time.time() - A, abs(mem2 - mem1)/2**(20)])
                 f.write(str(table))
         else:
             with open('results/results_analise_greedy.txt', 'w') as f_analise:
-                f_analise.write("Nodes,Percentagem,Edges,Different_k,Basic_Operations,Time,Memory\n")
-                for i in range(5, 200):
+                f_analise.write("Nodes,Percentagem,Edges,Perc_k,k,Result,Basic_Operations,Time,Memory\n")
+                for i in range(5, 80):
                     for p in [12.5, 25, 50, 75]:
                         v,e, adj_list = generate_graph(i, p)
                         graph = nx.Graph()
                         for edge in e:
                             graph.add_edge(edge[0],edge[1])
                         A = time.time()
-                        mem1 = psutil.virtual_memory().used # total physical memory in Bytes                        
-                        k = 3
-                        cliques_size = []
-                        while True:
+                        k = 0
+                        for j in [12, 25, 50, 75]:
+                            k = int(i * j / 100)
+                            mem1 = psutil.virtual_memory().used # total physical memory in Bytes
                             result, basic_op = p_clique(adj_list, k)
-                            if result == False:
-                                break
-                            cliques_size.append(k)
-                            k+=1
-                        mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
-                        f_analise.write(str(i) + "," + str(p) + "," + str(len(e)) + "," + str(len(cliques_size)) + "," + str(basic_op) + "," + str(time.time() - A) + "," + str((abs(mem2 - mem1))/2**(20)) + "\n")
+                            mem2 = psutil.virtual_memory().used  # total physical memory in Bytes
+                            f_analise.write(str(i) + "," + str(p) + "," + str(len(e)) + "," + str(j)+ "," + str(k) + "," + str(result) + "," + str(basic_op) + "," + str(time.time() - A) + "," + str((abs(mem2 - mem1))/2**(20)) + "\n")
         if args.d == 1:
             plot_graph(e)
