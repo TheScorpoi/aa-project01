@@ -1,33 +1,39 @@
 # aa-project01
 
 
-### Notes
+## Clique of size k
 
-https://iq.opengenus.org/algorithm-to-find-cliques-of-a-given-size-k/
-https://www.geeksforgeeks.org/find-all-cliques-of-size-k-in-an-undirected-graph/
-https://en.wikipedia.org/wiki/Clique_problem
-https://medium.com/100-days-of-algorithms/day-64-k-clique-c03fdc565b1e
+Este trabalho procura mostrar como o algoritmo “Clique of size k” funciona, quer como uma pesquisa de brute-force, 
+quer através de uma pesquisa com uma heurística. Todos os algoritmos foram escritos em Python (3.10), e serão feitas analises sobre a complexidade computacional dos mesmos.
 
+## Codigo
 
+O código do projeto pode ser consultado na direrório [src](./src). 
+Foram criados as seguintes classes, para fazer a geração de dados:
+- [Vertex](./src/vertex.py) 
+- [Point](./src/vertex.py) 
 
-## -- 
-https://github.com/OnurArdaB/k-clique
+A resolução do problema a partir dos 2 algoritmos distintos é feita no ficheiro [generator.py](./src/generator.py)
 
-https://iq.opengenus.org/greedy-approach-to-find-single-maximal-clique/
-http://www.stat.yale.edu/~yw562/teaching/684/lec02.pdf
-https://github.com/OnurArdaB/k-clique/blob/master/ProjectReport.
-https://arxiv.org/pdf/1808.09531.pdf
-https://arxiv.org/pdf/0710.0748.pdf
+## Como correr
 
+Instalar um virtual enviroment na root do repo:
 
-https://en.wikipedia.org/wiki/Bron–Kerbosch_algorithm
-https://iq.opengenus.org/bron-kerbosch-algorithm/
+```bash
+python3 -m venv venv
+```
 
+Instalar as dependências:
+```bash
+pip install -r requirements
+```
 
-http://www.vldb.org/pvldb/vol13/p2536-li.pdf
+Correr o gerador e os algoritmos
 
-https://stackoverflow.com/questions/66969559/how-to-find-all-the-cliques-in-a-graph-dictionary-in-python
+```bash
+python3 generator.py -h
+```
 
+## Relatório
 
-https://www.geeksforgeeks.org/cliques-in-graph/
-https://www.geeksforgeeks.org/proof-that-clique-decision-problem-is-np-complete/
+O projeto é acompanahdo por um relatório e o memso pode ser consultado no diretório [report](./report/relatorio.pdf)
